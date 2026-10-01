@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { QRCodeSVG } from 'qrcode.react';
 import { Sparkles, Hexagon, Loader2, Key, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
 import { supabase } from '../supabase';
 
@@ -103,7 +104,7 @@ const Splash = ({ onNext }) => {
 
 ;
 
-const LevelMap = ({ guestUser, onStartPhase1, onStartPhase2, onStartPhase3, completedLevels }) => {
+const LevelMap = ({ guestUser, onStartPhase1, onStartPhase2, onStartPhase3, onFinalQR, completedLevels }) => {
   const levels = [
     { id: 1, title: 'Origen', status: 'active' },
     { id: 2, title: 'Evolución', status: completedLevels.includes(1) ? 'active' : 'locked' },
@@ -152,12 +153,12 @@ const LevelMap = ({ guestUser, onStartPhase1, onStartPhase2, onStartPhase3, comp
 
       {/* Map Tree */}
       <div className="relative z-10 flex-1 w-full max-w-md mx-auto flex flex-col items-center justify-center pb-12 mt-4">
-        <div className="flex items-center gap-4 mb-10 opacity-70">
-          <div className="w-12 h-[1px] bg-gradient-to-r from-transparent to-primary/50" />
-          <h2 className="text-center text-[11px] text-silver tracking-[0.5em] uppercase font-medium">
+        <div className="flex items-center gap-2 sm:gap-4 mb-10 opacity-70">
+          <div className="w-8 sm:w-12 h-[1px] bg-gradient-to-r from-transparent to-primary/50" />
+          <h2 className="text-center text-[9px] sm:text-[11px] text-silver tracking-[0.3em] sm:tracking-[0.5em] uppercase font-medium whitespace-nowrap">
             Protocolo Legado
           </h2>
-          <div className="w-12 h-[1px] bg-gradient-to-l from-transparent to-primary/50" />
+          <div className="w-8 sm:w-12 h-[1px] bg-gradient-to-l from-transparent to-primary/50" />
         </div>
 
         <div className="relative w-full flex flex-col items-center space-y-12">
@@ -244,8 +245,8 @@ const LevelMap = ({ guestUser, onStartPhase1, onStartPhase2, onStartPhase3, comp
                 className="relative z-10 pt-4 bg-dark-bg"
               >
                 <button 
-                  onClick={() => console.log('Final QR')}
-                  className="relative overflow-hidden px-10 py-4 rounded-full border-2 border-primary bg-primary/10 text-primary font-medium tracking-[0.4em] text-xs uppercase hover:bg-primary/20 hover:scale-105 transition-all duration-300 flex justify-center items-center gap-3 shadow-[0_0_30px_rgba(239,239,201,0.3)] group"
+                  onClick={onFinalQR}
+                  className="relative overflow-hidden px-6 sm:px-10 py-3 sm:py-4 rounded-full border-2 border-primary bg-primary/10 text-primary font-medium tracking-[0.2em] sm:tracking-[0.4em] text-[10px] sm:text-xs uppercase hover:bg-primary/20 hover:scale-105 transition-all duration-300 flex justify-center items-center gap-2 sm:gap-3 shadow-[0_0_30px_rgba(239,239,201,0.3)] group whitespace-nowrap"
                 >
                   {/* Shimmer Effect */}
                   <motion.div
@@ -254,7 +255,7 @@ const LevelMap = ({ guestUser, onStartPhase1, onStartPhase2, onStartPhase3, comp
                     className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none"
                   />
                   Descifrar Credencial
-                  <Key className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                  <Key className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:rotate-12 transition-transform" />
                 </button>
               </motion.div>
             )}
@@ -385,6 +386,78 @@ const phase3Data = {
   question: "El futuro se escribe hoy. Deje un breve mensaje, visión o consejo para las futuras generaciones de líderes:"
 };
 
+const FinalTicket = ({ guestUser }) => {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="flex flex-col min-h-screen bg-dark-bg p-4 sm:p-6 items-center justify-center relative overflow-hidden"
+    >
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+      
+      <div className="max-w-md w-full relative z-10 flex flex-col h-full justify-center mt-8 mb-8">
+        <div className="p-8 border border-primary/20 bg-[#0A0A0A]/90 rounded-2xl backdrop-blur-md shadow-[0_0_40px_rgba(239,239,201,0.1)] text-center relative overflow-hidden">
+          {/* Decorative Corner lines */}
+          <div className="absolute top-0 left-0 w-16 h-[1px] bg-primary/50" />
+          <div className="absolute top-0 left-0 w-[1px] h-16 bg-primary/50" />
+          <div className="absolute bottom-0 right-0 w-16 h-[1px] bg-primary/50" />
+          <div className="absolute bottom-0 right-0 w-[1px] h-16 bg-primary/50" />
+
+          <h2 className="text-primary text-xl font-light tracking-[0.4em] uppercase mb-2">Legado 3.0</h2>
+          <p className="text-silver/60 text-[9px] tracking-widest uppercase mb-8">Origen · Evolución · Legado</p>
+
+          <p className="text-silver/90 text-xs font-light leading-relaxed mb-8 italic px-4">
+            "Nos dará mucho gusto compartir contigo una noche especial en nuestra cena de gala."
+          </p>
+
+          <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-8 flex flex-col items-center justify-center relative group">
+            <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
+            <div className="bg-white p-3 rounded-lg mb-4 relative z-10 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+              <QRCodeSVG 
+                value={guestUser?.access_code || "0000"} 
+                size={160} 
+                level={"H"}
+                bgColor={"#ffffff"}
+                fgColor={"#000000"}
+              />
+            </div>
+            <p className="text-primary font-mono text-sm tracking-[0.3em] uppercase">
+              ID: {guestUser?.access_code}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-y-6 gap-x-4 text-left border-t border-white/10 pt-6">
+            <div>
+              <p className="text-silver/40 text-[8px] uppercase tracking-widest mb-1">Fecha</p>
+              <p className="text-silver/90 text-xs font-light">11 de nov 2026</p>
+            </div>
+            <div>
+              <p className="text-silver/40 text-[8px] uppercase tracking-widest mb-1">Hora</p>
+              <p className="text-silver/90 text-xs font-light">7:00 p. m.</p>
+            </div>
+            <div>
+              <p className="text-silver/40 text-[8px] uppercase tracking-widest mb-1">Lugar</p>
+              <p className="text-silver/90 text-xs font-light">Torre Legacy</p>
+            </div>
+            <div>
+              <p className="text-silver/40 text-[8px] uppercase tracking-widest mb-1">Dress Code</p>
+              <p className="text-silver/90 text-xs font-light uppercase tracking-wider">All Black</p>
+            </div>
+          </div>
+          
+          <div className="mt-6 text-left border-t border-white/10 pt-6">
+            <p className="text-silver/40 text-[8px] uppercase tracking-widest mb-1">Ubicación</p>
+            <p className="text-silver/90 text-xs font-light leading-relaxed">
+              Av. Empresarios 62<br/>Col. Puerta de Hierro<br/>Legacy Tower
+            </p>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 export default function InvitationFlow() {
   const [step, setStep] = useState(0);
   const [guestUser, setGuestUser] = useState(null);
@@ -435,7 +508,8 @@ export default function InvitationFlow() {
           completedLevels={completedLevels}
           onStartPhase1={() => setStep(3)} 
           onStartPhase2={() => setStep(4)} 
-          onStartPhase3={() => setStep(5)} 
+          onStartPhase3={() => setStep(5)}
+          onFinalQR={() => setStep(6)} 
         />
       )}
       {step === 3 && (
@@ -503,6 +577,12 @@ export default function InvitationFlow() {
             // All phases done, unlock credentials button in map
             setStep(2);
           }}
+        />
+      )}
+      {step === 6 && (
+        <FinalTicket 
+          key="ticket" 
+          guestUser={guestUser} 
         />
       )}
     </AnimatePresence>
