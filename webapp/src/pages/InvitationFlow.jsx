@@ -359,31 +359,76 @@ const PhaseQuestion = ({
   );
 };
 
-const phase1Data = {
-  narrative: "Toda gran estructura nace de un cimiento. Los archivos fundacionales han sido revelados. Para restaurar la memoria histórica, analice y responda a la siguiente interrogante...",
-  question: "¿Cuál consideras que es el pilar fundamental que garantiza la supervivencia de una empresa familiar en su primera generación?",
-  options: [
-    "La creación de un protocolo familiar sólido y temprano.",
-    "Separar estrictamente las emociones de las decisiones de negocio.",
-    "El liderazgo carismático y la visión del fundador original.",
-    "La profesionalización rápida con talento externo a la familia."
-  ]
-};
+const getPhaseData = (phaseNumber, role) => {
+  const isStudent = role?.toLowerCase().includes("estudiante");
 
-const phase2Data = {
-  narrative: "Las tormentas forjan el acero. Al crecer la empresa, la familia también se expande, multiplicando las variables. Analice este punto crítico...",
-  question: "¿Cuál ha sido el mayor desafío superado en la transición hacia la segunda generación?",
-  options: [
-    "La delegación del control operativo sin perder la identidad.",
-    "Modernizar los sistemas frente a la resistencia al cambio.",
-    "Mantener la unidad familiar en tiempos de crisis.",
-    "La expansión agresiva hacia mercados no explorados."
-  ]
-};
+  if (phaseNumber === 1) {
+    if (isStudent) {
+      return {
+        narrative: "Toda gran estructura nace de un cimiento. Los archivos fundacionales han sido revelados. Para restaurar la memoria histórica, analiza y responde a la siguiente interrogante...",
+        question: "¿Qué valor de una empresa familiar te comprometerías a preservar, incluso cuando llegue el momento de transformarla?",
+        options: [
+          "La visión a largo plazo y el compromiso con la familia.",
+          "La cercanía y trato humano con los colaboradores.",
+          "La honestidad y transparencia en cada decisión.",
+          "La pasión y el espíritu emprendedor del fundador."
+        ]
+      };
+    } else {
+      return {
+        narrative: "Toda gran estructura nace de un cimiento. Los archivos fundacionales han sido revelados. Para restaurar la memoria histórica, analice y responda a la siguiente interrogante...",
+        question: "¿Qué valor considera indispensable preservar para que una empresa familiar pueda crecer sin perder su esencia?",
+        options: [
+          "La confianza y unidad familiar por encima de todo.",
+          "La humildad para aprender y adaptarse al mercado.",
+          "La integridad y ética en los negocios.",
+          "El espíritu de servicio y cercanía con la gente."
+        ]
+      };
+    }
+  }
 
-const phase3Data = {
-  narrative: "La última bóveda. El presente es efímero, pero las palabras trascienden. Su visión completará la matriz de datos del Legado 3.0...",
-  question: "El futuro se escribe hoy. Deje un breve mensaje, visión o consejo para las futuras generaciones de líderes:"
+  if (phaseNumber === 2) {
+    if (isStudent) {
+      return {
+        narrative: "Las tormentas forjan el acero. Al crecer la empresa, la familia también se expande, multiplicando las variables. Analiza este punto crítico...",
+        question: "Si mañana asumieras la dirección de una empresa familiar, ¿qué sería lo primero que transformarías para asegurar su futuro?",
+        options: [
+          "Implementaría nuevas tecnologías e innovación digital.",
+          "Estructuraría procesos y crearía un gobierno corporativo claro.",
+          "Diversificaría los negocios y exploraría nuevos mercados.",
+          "Profesionalizaría al equipo integrando talento externo."
+        ]
+      };
+    } else {
+      return {
+        narrative: "Las tormentas forjan el acero. Al crecer la empresa, la familia también se expande, multiplicando las variables. Analice este punto crítico...",
+        question: "¿Cuál es el cambio más importante que debe impulsar la siguiente generación para profesionalizar una empresa familiar?",
+        options: [
+          "Implementar un gobierno corporativo sólido.",
+          "Separar las decisiones emocionales del negocio.",
+          "Atraer talento externo especializado para puestos clave.",
+          "Adoptar nuevas tecnologías y digitalizar la operación."
+        ]
+      };
+    }
+  }
+
+  if (phaseNumber === 3) {
+    if (isStudent) {
+      return {
+        narrative: "La última bóveda. El presente es efímero, pero las palabras trascienden. Tu visión completará la matriz de datos del Legado 3.0...",
+        question: "Cuando termine tu trayectoria como director o empresario, ¿por qué te gustaría que las próximas generaciones te recordaran?",
+        isTextBox: true
+      };
+    } else {
+      return {
+        narrative: "La última bóveda. El presente es efímero, pero las palabras trascienden. Su visión completará la matriz de datos del Legado 3.0...",
+        question: "Si pudiera transmitir una sola enseñanza a las próximas generaciones de empresarios familiares, ¿cuál le gustaría que perdurara?",
+        isTextBox: true
+      };
+    }
+  }
 };
 
 const FinalTicket = ({ guestUser }) => {
@@ -618,18 +663,22 @@ export default function InvitationFlow() {
         <PhaseQuestion 
           key="phase1"
           phaseNumber={1}
-          narrative={phase1Data.narrative}
-          question={phase1Data.question}
-          options={phase1Data.options}
+          narrative={getPhaseData(1, guestUser?.role).narrative}
+          question={getPhaseData(1, guestUser?.role).question}
+          options={getPhaseData(1, guestUser?.role).options}
           onAbort={() => setStep(2)}
           onTransmit={async (answer) => {
             if (guestUser?.access_code && guestUser.access_code !== "0000") {
               const newAiResponses = { ...(guestUser.ai_responses || {}), fase1: answer };
+              const hasAllPhases = newAiResponses.fase1 && newAiResponses.fase2 && newAiResponses.fase3;
+              const updates = { ai_responses: newAiResponses };
+              if (hasAllPhases) updates.status = 'invited';
+
               await supabase
                 .from('guests')
-                .update({ ai_responses: newAiResponses })
+                .update(updates)
                 .eq('access_code', guestUser.access_code);
-              setGuestUser({ ...guestUser, ai_responses: newAiResponses });
+              setGuestUser({ ...guestUser, ...updates });
             }
             if (!completedLevels.includes(1)) {
               setCompletedLevels([...completedLevels, 1]);
@@ -642,18 +691,22 @@ export default function InvitationFlow() {
         <PhaseQuestion 
           key="phase2"
           phaseNumber={2}
-          narrative={phase2Data.narrative}
-          question={phase2Data.question}
-          options={phase2Data.options}
+          narrative={getPhaseData(2, guestUser?.role).narrative}
+          question={getPhaseData(2, guestUser?.role).question}
+          options={getPhaseData(2, guestUser?.role).options}
           onAbort={() => setStep(2)}
           onTransmit={async (answer) => {
             if (guestUser?.access_code && guestUser.access_code !== "0000") {
               const newAiResponses = { ...(guestUser.ai_responses || {}), fase2: answer };
+              const hasAllPhases = newAiResponses.fase1 && newAiResponses.fase2 && newAiResponses.fase3;
+              const updates = { ai_responses: newAiResponses };
+              if (hasAllPhases) updates.status = 'invited';
+
               await supabase
                 .from('guests')
-                .update({ ai_responses: newAiResponses })
+                .update(updates)
                 .eq('access_code', guestUser.access_code);
-              setGuestUser({ ...guestUser, ai_responses: newAiResponses });
+              setGuestUser({ ...guestUser, ...updates });
             }
             if (!completedLevels.includes(2)) {
               setCompletedLevels([...completedLevels, 2]);
@@ -666,18 +719,22 @@ export default function InvitationFlow() {
         <PhaseQuestion 
           key="phase3"
           phaseNumber={3}
-          narrative={phase3Data.narrative}
-          question={phase3Data.question}
+          narrative={getPhaseData(3, guestUser?.role).narrative}
+          question={getPhaseData(3, guestUser?.role).question}
           isTextBox={true}
           onAbort={() => setStep(2)}
           onTransmit={async (answer) => {
             if (guestUser?.access_code && guestUser.access_code !== "0000") {
               const newAiResponses = { ...(guestUser.ai_responses || {}), fase3: answer };
+              const hasAllPhases = newAiResponses.fase1 && newAiResponses.fase2 && newAiResponses.fase3;
+              const updates = { ai_responses: newAiResponses };
+              if (hasAllPhases) updates.status = 'invited';
+
               await supabase
                 .from('guests')
-                .update({ ai_responses: newAiResponses })
+                .update(updates)
                 .eq('access_code', guestUser.access_code);
-              setGuestUser({ ...guestUser, ai_responses: newAiResponses });
+              setGuestUser({ ...guestUser, ...updates });
             }
             if (!completedLevels.includes(3)) {
               setCompletedLevels([...completedLevels, 3]);
