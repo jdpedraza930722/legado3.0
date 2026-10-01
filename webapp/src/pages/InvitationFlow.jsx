@@ -32,7 +32,7 @@ const Splash = ({ onNext }) => {
       className="relative flex flex-col items-center justify-center min-h-screen bg-dark-bg overflow-hidden"
     >
       {/* Video Background with Vignette */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#0f172a_100%)] z-10 pointer-events-none opacity-80" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#2F1B1A_100%)] z-10 pointer-events-none opacity-80" />
       <video
         ref={videoRef}
         autoPlay
@@ -78,7 +78,7 @@ const Splash = ({ onNext }) => {
         transition={{ delay: 0.2, duration: 0.4 }}
         className="absolute bottom-16 left-1/2 -translate-x-1/2 z-20 w-10/12 max-w-xs"
       >
-        <div className="bg-[#0f172a]/60 backdrop-blur-xl border border-white/10 border-t-white/20 rounded-full p-4 flex flex-col items-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+        <div className="bg-[#000000]/60 backdrop-blur-xl border border-white/10 border-t-white/20 rounded-full p-4 flex flex-col items-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
           <div className="flex justify-between w-full px-2 mb-2 items-center">
             <span className="text-silver/80 text-[9px] sm:text-[10px] font-medium tracking-[0.3em] uppercase flex items-center gap-2">
               <Sparkles className="w-3 h-3 text-primary animate-pulse" />
@@ -115,15 +115,15 @@ const Register = ({ onNext }) => {
       className="flex flex-col items-center justify-center min-h-screen bg-dark-bg p-6 relative overflow-hidden"
     >
       {/* Background ambient light */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-olive/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-wine/20 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Luxury Card */}
       <motion.div 
         initial={{ y: 15, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-md bg-[#1e293b]/30 backdrop-blur-2xl border border-white/5 border-t-white/20 rounded-3xl p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+        className="relative z-10 w-full max-w-md bg-black/40 backdrop-blur-3xl border border-white/5 border-t-white/20 rounded-3xl p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
       >
         <div className="text-center mb-10">
           <h2 className="text-xl text-white font-light tracking-[0.3em] uppercase mb-3">
@@ -172,7 +172,7 @@ const Register = ({ onNext }) => {
                   onClick={() => setRole(r)}
                   className={`px-4 py-2 rounded-full text-xs font-light tracking-wider transition-all duration-200 ${
                     role === r 
-                      ? 'bg-primary/20 border-primary text-primary border shadow-[0_0_15px_rgba(212,175,55,0.3)]' 
+                      ? 'bg-wine/30 border-wine text-primary border shadow-[0_0_15px_rgba(100,0,23,0.5)]' 
                       : 'bg-white/5 border-white/10 text-silver/60 border hover:bg-white/10 hover:text-white'
                   }`}
                 >
