@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Hexagon, Loader2, Key, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
 import { supabase } from '../supabase';
@@ -101,137 +101,7 @@ const Splash = ({ onNext }) => {
   );
 };
 
-// Register Component as VIP Access Key
-const Register = ({ onNext }) => {
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-
-  const handleAccess = async () => {
-    if (!email) {
-      setError("Ingrese su Llave de Acceso.");
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      setError("Formato de credencial inválido.");
-      return;
-    }
-    
-    setLoading(true);
-    setError('');
-
-    // Query Supabase for the guest
-    const { data, error: fetchError } = await supabase
-      .from('guests')
-      .select('*')
-      .eq('email', email.trim().toLowerCase())
-      .single();
-
-    if (fetchError || !data) {
-      setLoading(false);
-      setError("Credenciales no válidas. El acceso fue denegado.");
-    } else {
-      // Show success message and wait a bit before transitioning
-      setSuccess("Acceso Autorizado.");
-      setTimeout(() => {
-        onNext(data);
-      }, 1500);
-    }
-  };
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      exit={{ opacity: 0, transition: { duration: 0.15 } }}
-      transition={{ duration: 0.2 }}
-      className="flex flex-col items-center justify-center min-h-screen bg-dark-bg p-6 relative overflow-hidden"
-    >
-      {/* Background ambient light */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-olive/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-wine/20 rounded-full blur-[120px] pointer-events-none" />
-
-      {/* Luxury Card */}
-      <motion.div 
-        initial={{ y: 15, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.25, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-sm bg-black/40 backdrop-blur-3xl border border-white/5 border-t-white/20 rounded-3xl p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
-      >
-        {/* Subtle Watermark */}
-        <Hexagon className="absolute -bottom-10 -right-10 w-64 h-64 text-white/[0.02] pointer-events-none" />
-
-        <div className="text-center mb-8">
-          <h2 className="text-base text-white font-light tracking-[0.3em] uppercase mb-2 whitespace-nowrap">
-            Portal de Acceso
-          </h2>
-          <p className="text-silver/60 text-[9px] font-light tracking-widest uppercase">
-            Autentifique su credencial
-          </p>
-        </div>
-        
-        <div className="space-y-6">
-          <div className="relative flex items-center border-b border-white/20 focus-within:border-primary transition-colors duration-300 pb-2">
-            <Key className="w-4 h-4 text-silver/40 mr-3" />
-            <input 
-              type="email" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading || success}
-              onKeyDown={(e) => e.key === 'Enter' && handleAccess()}
-              className="w-full bg-transparent border-0 px-0 text-white focus:outline-none focus:ring-0 transition-all font-light text-sm placeholder:text-silver/40 placeholder:tracking-widest placeholder:uppercase placeholder:text-[10px] disabled:opacity-50" 
-              placeholder="Correo Institucional"
-            />
-          </div>
-
-          <AnimatePresence>
-            {error && (
-              <motion.div 
-                initial={{ opacity: 0, y: -5 }} 
-                animate={{ opacity: 1, y: 0 }} 
-                exit={{ opacity: 0 }} 
-                className="flex items-center justify-center gap-2 text-red-400 text-xs font-light tracking-wide bg-red-400/10 py-2 px-3 rounded-md border border-red-400/20"
-              >
-                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                <p className="leading-tight text-center">{error}</p>
-              </motion.div>
-            )}
-            {success && (
-              <motion.div 
-                initial={{ opacity: 0, y: -5 }} 
-                animate={{ opacity: 1, y: 0 }} 
-                exit={{ opacity: 0 }} 
-                className="flex items-center justify-center gap-2 text-primary text-xs font-light tracking-wide bg-primary/10 py-2 px-3 rounded-md border border-primary/20"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
-                <p className="leading-tight text-center">{success}</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
-          <button 
-            onClick={handleAccess}
-            disabled={loading || success}
-            className="relative overflow-hidden w-full mt-8 py-3 rounded-full border border-primary/30 text-primary font-light tracking-[0.3em] text-[10px] uppercase hover:bg-wine/40 hover:border-wine hover:text-white transition-all duration-300 flex justify-center items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_0_rgba(0,0,0,0)] hover:shadow-[0_0_20px_rgba(100,0,23,0.5)]"
-          >
-            {/* Shimmer Effect */}
-            <motion.div
-              animate={{ x: ["-100%", "300%"] }}
-              transition={{ repeat: Infinity, duration: 2.5, ease: "linear", repeatDelay: 1.5 }}
-              className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 pointer-events-none"
-            />
-            <span className="relative z-10 flex items-center gap-3">
-              {loading && !success ? <Loader2 className="w-4 h-4 animate-spin" /> : "Iniciar Experiencia"}
-            </span>
-          </button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-};
+;
 
 const LevelMap = ({ guestUser, onStartPhase1, onStartPhase2, onStartPhase3, completedLevels }) => {
   const levels = [
@@ -281,21 +151,25 @@ const LevelMap = ({ guestUser, onStartPhase1, onStartPhase2, onStartPhase3, comp
       </motion.div>
 
       {/* Map Tree */}
-      <div className="relative z-10 flex-1 w-full max-w-md mx-auto flex flex-col items-center justify-center pb-12">
-        <h2 className="text-center text-[10px] text-silver/60 tracking-[0.4em] uppercase mb-10">
-          Protocolo Legado 3.0
-        </h2>
+      <div className="relative z-10 flex-1 w-full max-w-md mx-auto flex flex-col items-center justify-center pb-12 mt-4">
+        <div className="flex items-center gap-4 mb-10 opacity-70">
+          <div className="w-12 h-[1px] bg-gradient-to-r from-transparent to-primary/50" />
+          <h2 className="text-center text-[11px] text-silver tracking-[0.5em] uppercase font-medium">
+            Protocolo Legado
+          </h2>
+          <div className="w-12 h-[1px] bg-gradient-to-l from-transparent to-primary/50" />
+        </div>
 
-        <div className="relative w-full flex flex-col items-center space-y-10 mb-8">
+        <div className="relative w-full flex flex-col items-center space-y-12">
           {/* Vertical Connecting Line */}
-          <div className="absolute top-0 bottom-0 left-1/2 w-[1px] bg-white/10 -translate-x-1/2" />
+          <div className="absolute top-0 bottom-8 left-1/2 w-[1px] bg-white/10 -translate-x-1/2" />
           
           {/* Progress Line (Lights up according to progress) */}
           <motion.div 
             initial={{ height: 0 }}
-            animate={{ height: completedLevels.length === 0 ? "33%" : completedLevels.length === 1 ? "66%" : "100%" }}
+            animate={{ height: completedLevels.length === 0 ? "25%" : completedLevels.length === 1 ? "50%" : completedLevels.length === 2 ? "75%" : "100%" }}
             transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
-            className="absolute top-0 left-1/2 w-[1px] bg-gradient-to-b from-primary via-primary/50 to-transparent -translate-x-1/2" 
+            className="absolute top-0 left-1/2 w-[1px] bg-gradient-to-b from-primary via-primary/80 to-transparent -translate-x-1/2" 
           />
 
           {levels.map((level, index) => {
@@ -361,26 +235,31 @@ const LevelMap = ({ guestUser, onStartPhase1, onStartPhase2, onStartPhase3, comp
               </motion.div>
             );
           })}
-        </div>
-        
-        {/* Final Action */}
-        <AnimatePresence>
-          {completedLevels.length === 3 && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-6"
-            >
-              <button 
-                onClick={() => console.log('Final QR')}
-                className="relative overflow-hidden px-8 py-3 rounded-full border border-primary text-primary font-light tracking-[0.3em] text-[10px] uppercase hover:bg-primary/10 transition-all duration-300 flex justify-center items-center gap-3 shadow-[0_0_20px_rgba(239,239,201,0.2)]"
+          {/* Final Action */}
+          <AnimatePresence>
+            {completedLevels.length === 3 && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative z-10 pt-4 bg-dark-bg"
               >
-                Descifrar Credencial
-                <Key className="w-3 h-3" />
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <button 
+                  onClick={() => console.log('Final QR')}
+                  className="relative overflow-hidden px-10 py-4 rounded-full border-2 border-primary bg-primary/10 text-primary font-medium tracking-[0.4em] text-xs uppercase hover:bg-primary/20 hover:scale-105 transition-all duration-300 flex justify-center items-center gap-3 shadow-[0_0_30px_rgba(239,239,201,0.3)] group"
+                >
+                  {/* Shimmer Effect */}
+                  <motion.div
+                    animate={{ x: ["-100%", "300%"] }}
+                    transition={{ repeat: Infinity, duration: 2.5, ease: "linear", repeatDelay: 1.5 }}
+                    className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none"
+                  />
+                  Descifrar Credencial
+                  <Key className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </motion.div>
   );
@@ -411,23 +290,23 @@ const PhaseQuestion = ({
         <div className="w-full flex justify-between items-center mb-6 px-2">
           <button 
             onClick={onAbort}
-            className="text-silver/50 hover:text-white text-[9px] tracking-widest uppercase transition-colors flex items-center gap-2"
+            className="text-silver/80 hover:text-white text-[10px] sm:text-xs tracking-widest uppercase transition-colors flex items-center gap-2 font-medium"
           >
-            <span className="text-lg leading-none">&lsaquo;</span> Abortar
+            <span className="text-xl leading-none -mt-1">&lsaquo;</span> Abortar
           </button>
-          <h2 className="text-silver/30 tracking-[0.4em] text-[8px] uppercase font-light">
+          <h2 className="text-silver/70 tracking-[0.4em] text-[9px] sm:text-[10px] uppercase font-medium">
             Archivo 0{phaseNumber}/03
           </h2>
         </div>
 
-        <p className="text-silver/80 text-[11px] sm:text-[12px] font-light leading-relaxed mb-6 italic text-center px-4">
+        <p className="text-silver/90 text-xs sm:text-sm font-normal leading-relaxed mb-6 italic text-center px-4">
           "{narrative}"
         </p>
         
         <div className="p-5 sm:p-6 border border-white/5 bg-[#0A0A0A]/80 rounded-2xl backdrop-blur-md shadow-[0_0_30px_rgba(0,0,0,0.8)] text-left relative group">
           <div className="absolute top-0 left-6 w-12 h-[1px] bg-primary/50" />
           
-          <h3 className="text-white text-[13px] font-light mb-5 leading-relaxed">
+          <h3 className="text-white text-sm sm:text-base font-normal mb-5 leading-relaxed">
             {question}
           </h3>
           
@@ -442,10 +321,10 @@ const PhaseQuestion = ({
                     className={`w-full text-left p-3 rounded-xl border transition-all duration-300 flex items-center justify-between group
                       ${isSelected 
                         ? 'bg-primary/10 border-primary/50 text-white shadow-[0_0_15px_rgba(239,239,201,0.15)]' 
-                        : 'bg-black/50 border-white/5 text-silver/60 hover:bg-white/5 hover:border-white/10'
+                        : 'bg-black/50 border-white/5 text-silver/80 hover:bg-white/5 hover:border-white/10 hover:text-white'
                       }`}
                   >
-                    <span className="text-[11px] font-light leading-relaxed pr-4">{opt}</span>
+                    <span className="text-xs sm:text-sm font-normal leading-relaxed pr-4 transition-colors">{opt}</span>
                     <div className={`w-3 h-3 rounded-full border flex-shrink-0 transition-colors
                       ${isSelected ? 'border-primary bg-primary shadow-[0_0_8px_rgba(239,239,201,0.8)]' : 'border-silver/30 group-hover:border-silver/50'}`} 
                     />
@@ -457,7 +336,7 @@ const PhaseQuestion = ({
             <textarea 
               value={textVal}
               onChange={(e) => setTextVal(e.target.value)}
-              className="w-full bg-transparent border-b border-white/20 text-white font-light text-sm focus:outline-none focus:border-primary transition-colors resize-none placeholder:text-silver/30 pb-2"
+              className="w-full bg-transparent border-b border-white/30 text-white font-normal text-sm sm:text-base focus:outline-none focus:border-primary transition-colors resize-none placeholder:text-silver/50 pb-2"
               rows={4}
               placeholder="Escriba su mensaje aquí..."
             />
@@ -511,15 +390,44 @@ export default function InvitationFlow() {
   const [guestUser, setGuestUser] = useState(null);
   const [completedLevels, setCompletedLevels] = useState([]);
 
-  const handleVerificationSuccess = (user) => {
-    setGuestUser(user);
-    setStep(2);
-  };
+  useEffect(() => {
+    // The Magic Link logic: Extract 'guest' from URL
+    const fetchGuest = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const guestId = urlParams.get('guest');
+      
+      if (guestId) {
+        const { data, error } = await supabase
+          .from('guests')
+          .select('*')
+          .eq('access_code', guestId)
+          .single();
+        
+        if (data) {
+          setGuestUser(data);
+          // If they already answered previously, we can pre-fill their completed levels
+          const completed = [];
+          if (data.phase1_answer) completed.push(1);
+          if (data.phase2_answer) completed.push(2);
+          if (data.phase3_answer) completed.push(3);
+          setCompletedLevels(completed);
+        } else {
+          console.error("Guest not found:", error);
+          // Fallback to mock if not found
+          setGuestUser({ name: "INVITADO VIP", role: "DIRECTIVO", access_code: "0000" });
+        }
+      } else {
+        // Development fallback if accessed without URL parameter
+        setGuestUser({ name: "INVITADO VIP", role: "DIRECTIVO", access_code: "0000" });
+      }
+    };
+    
+    fetchGuest();
+  }, []);
 
   return (
     <AnimatePresence mode="wait">
-      {step === 0 && <Splash key="splash" onNext={() => setStep(1)} />}
-      {step === 1 && <Register key="register" onNext={handleVerificationSuccess} />}
+      {step === 0 && <Splash key="splash" onNext={() => setStep(2)} />}
       {step === 2 && (
         <LevelMap 
           key="map" 
@@ -539,7 +447,12 @@ export default function InvitationFlow() {
           options={phase1Data.options}
           onAbort={() => setStep(2)}
           onTransmit={async (answer) => {
-            // TODO: Save answer to Supabase here
+            if (guestUser?.access_code && guestUser.access_code !== "0000") {
+              await supabase
+                .from('guests')
+                .update({ phase1_answer: answer })
+                .eq('access_code', guestUser.access_code);
+            }
             if (!completedLevels.includes(1)) {
               setCompletedLevels([...completedLevels, 1]);
             }
@@ -556,7 +469,12 @@ export default function InvitationFlow() {
           options={phase2Data.options}
           onAbort={() => setStep(2)}
           onTransmit={async (answer) => {
-            // TODO: Save answer to Supabase here
+            if (guestUser?.access_code && guestUser.access_code !== "0000") {
+              await supabase
+                .from('guests')
+                .update({ phase2_answer: answer })
+                .eq('access_code', guestUser.access_code);
+            }
             if (!completedLevels.includes(2)) {
               setCompletedLevels([...completedLevels, 2]);
             }
@@ -573,7 +491,12 @@ export default function InvitationFlow() {
           isTextBox={true}
           onAbort={() => setStep(2)}
           onTransmit={async (answer) => {
-            // TODO: Save answer to Supabase here
+            if (guestUser?.access_code && guestUser.access_code !== "0000") {
+              await supabase
+                .from('guests')
+                .update({ phase3_answer: answer })
+                .eq('access_code', guestUser.access_code);
+            }
             if (!completedLevels.includes(3)) {
               setCompletedLevels([...completedLevels, 3]);
             }
