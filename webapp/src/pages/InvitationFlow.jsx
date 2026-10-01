@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
-import { Sparkles, Hexagon, Loader2, Key, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
+import { Sparkles, Hexagon, Loader2, Key, AlertCircle, CheckCircle2, Lock, Download } from 'lucide-react';
 import { supabase } from '../supabase';
 
 // Splash Screen Component
@@ -387,6 +387,48 @@ const phase3Data = {
 };
 
 const FinalTicket = ({ guestUser }) => {
+  const [downloading, setDownloading] = useState(false);
+
+  const downloadQR = () => {
+    setDownloading(true);
+    const svg = document.getElementById("qr-code");
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    img.onload = () => {
+      // Add padding around QR
+      const padding = 40;
+      canvas.width = img.width + (padding * 2);
+      canvas.height = img.height + (padding * 2) + 60; // Extra room for text at bottom
+      
+      // Draw background
+      ctx.fillStyle = "#0A0A0A"; 
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw QR border
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(padding - 10, padding - 10, img.width + 20, img.height + 20);
+
+      // Draw QR
+      ctx.drawImage(img, padding, padding);
+      
+      // Draw Text
+      ctx.fillStyle = "#EFEFC9"; // primary color
+      ctx.font = "bold 24px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(`ID: ${guestUser?.access_code || "0000"}`, canvas.width / 2, canvas.height - 30);
+
+      const pngFile = canvas.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
+      downloadLink.download = `Legado3_Acceso_${guestUser?.access_code || "0000"}.png`;
+      downloadLink.href = `${pngFile}`;
+      downloadLink.click();
+      setDownloading(false);
+    };
+    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
@@ -394,65 +436,110 @@ const FinalTicket = ({ guestUser }) => {
       exit={{ opacity: 0, y: -20 }}
       className="flex flex-col min-h-screen bg-dark-bg p-4 sm:p-6 items-center justify-center relative overflow-hidden"
     >
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-silver/5 rounded-full blur-[120px] pointer-events-none" />
       
-      <div className="max-w-md w-full relative z-10 flex flex-col h-full justify-center mt-8 mb-8">
-        <div className="p-8 border border-primary/20 bg-[#0A0A0A]/90 rounded-2xl backdrop-blur-md shadow-[0_0_40px_rgba(239,239,201,0.1)] text-center relative overflow-hidden">
-          {/* Decorative Corner lines */}
-          <div className="absolute top-0 left-0 w-16 h-[1px] bg-primary/50" />
-          <div className="absolute top-0 left-0 w-[1px] h-16 bg-primary/50" />
-          <div className="absolute bottom-0 right-0 w-16 h-[1px] bg-primary/50" />
-          <div className="absolute bottom-0 right-0 w-[1px] h-16 bg-primary/50" />
-
-          <h2 className="text-primary text-xl font-light tracking-[0.4em] uppercase mb-2">Legado 3.0</h2>
-          <p className="text-silver/60 text-[9px] tracking-widest uppercase mb-8">Origen · Evolución · Legado</p>
-
-          <p className="text-silver/90 text-xs font-light leading-relaxed mb-8 italic px-4">
-            "Nos dará mucho gusto compartir contigo una noche especial en nuestra cena de gala."
-          </p>
-
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-8 flex flex-col items-center justify-center relative group">
-            <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
-            <div className="bg-white p-3 rounded-lg mb-4 relative z-10 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-              <QRCodeSVG 
-                value={guestUser?.access_code || "0000"} 
-                size={160} 
-                level={"H"}
-                bgColor={"#ffffff"}
-                fgColor={"#000000"}
-              />
-            </div>
-            <p className="text-primary font-mono text-sm tracking-[0.3em] uppercase">
-              ID: {guestUser?.access_code}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-y-6 gap-x-4 text-left border-t border-white/10 pt-6">
-            <div>
-              <p className="text-silver/40 text-[8px] uppercase tracking-widest mb-1">Fecha</p>
-              <p className="text-silver/90 text-xs font-light">11 de nov 2026</p>
-            </div>
-            <div>
-              <p className="text-silver/40 text-[8px] uppercase tracking-widest mb-1">Hora</p>
-              <p className="text-silver/90 text-xs font-light">7:00 p. m.</p>
-            </div>
-            <div>
-              <p className="text-silver/40 text-[8px] uppercase tracking-widest mb-1">Lugar</p>
-              <p className="text-silver/90 text-xs font-light">Torre Legacy</p>
-            </div>
-            <div>
-              <p className="text-silver/40 text-[8px] uppercase tracking-widest mb-1">Dress Code</p>
-              <p className="text-silver/90 text-xs font-light uppercase tracking-wider">All Black</p>
-            </div>
-          </div>
-          
-          <div className="mt-6 text-left border-t border-white/10 pt-6">
-            <p className="text-silver/40 text-[8px] uppercase tracking-widest mb-1">Ubicación</p>
-            <p className="text-silver/90 text-xs font-light leading-relaxed">
-              Av. Empresarios 62<br/>Col. Puerta de Hierro<br/>Legacy Tower
-            </p>
+      <div className="max-w-sm w-full relative z-10 flex flex-col h-full justify-center py-4">
+        
+        {/* Ticket Header (Name & Role) */}
+        <div className="text-center mb-4">
+          <h1 className="text-white text-sm font-light tracking-widest uppercase mb-2">
+            {guestUser?.name || "Invitado"}
+          </h1>
+          <div className="inline-flex items-center gap-2 border border-primary/30 px-3 py-1 rounded-full bg-primary/10">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-primary text-[8px] font-medium tracking-[0.3em] uppercase">
+              {guestUser?.role || "VIP"}
+            </span>
           </div>
         </div>
+
+        {/* The Black Card */}
+        <motion.div 
+          initial={{ y: 40, opacity: 0, filter: "blur(10px)" }}
+          animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+          className="relative"
+        >
+          <div className="p-6 sm:p-8 border border-white/10 bg-black rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] text-center relative overflow-hidden">
+            
+            {/* Ticket Punch Holes */}
+            <div className="absolute top-1/2 -left-4 -translate-y-1/2 w-8 h-8 bg-dark-bg rounded-full border-r border-white/10 shadow-[inset_-5px_0_10px_rgba(0,0,0,0.5)]" />
+            <div className="absolute top-1/2 -right-4 -translate-y-1/2 w-8 h-8 bg-dark-bg rounded-full border-l border-white/10 shadow-[inset_5px_0_10px_rgba(0,0,0,0.5)]" />
+            
+            {/* Perforated Line */}
+            <div className="absolute top-1/2 left-4 right-4 -translate-y-1/2 border-t-[1.5px] border-dashed border-white/10" />
+
+            {/* Top Half */}
+            <div className="pb-6">
+              <h2 className="text-primary text-xl font-light tracking-[0.4em] uppercase mb-1">Legado 3.0</h2>
+              <p className="text-silver/80 text-[8px] tracking-[0.3em] uppercase mb-4">Origen · Evolución · Legado</p>
+
+              <p className="text-white text-[11px] font-light leading-relaxed px-2 tracking-wide opacity-90">
+                Será un honor contar con su presencia en nuestra exclusiva cena de gala.
+              </p>
+            </div>
+
+            {/* Bottom Half */}
+            <div className="pt-6">
+              <div className="flex flex-col items-center justify-center relative group">
+                <div className="bg-white p-3 rounded-xl mb-3 shadow-[0_0_40px_rgba(255,255,255,0.1)] ring-1 ring-white/20">
+                  <QRCodeSVG 
+                    id="qr-code"
+                    value={guestUser?.access_code || "0000"} 
+                    size={120} 
+                    level={"H"}
+                    bgColor={"#ffffff"}
+                    fgColor={"#000000"}
+                  />
+                </div>
+                <p className="text-primary font-mono text-xs tracking-[0.4em] uppercase">
+                  ID: {guestUser?.access_code}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-y-4 gap-x-4 text-left mt-6">
+                <div>
+                  <p className="text-silver/60 text-[8px] uppercase tracking-[0.2em] mb-0.5">Fecha</p>
+                  <p className="text-white text-[11px] font-light tracking-wide">11 de nov 2026</p>
+                </div>
+                <div>
+                  <p className="text-silver/60 text-[8px] uppercase tracking-[0.2em] mb-0.5">Hora</p>
+                  <p className="text-white text-[11px] font-light tracking-wide">7:00 p. m.</p>
+                </div>
+                <div>
+                  <p className="text-silver/60 text-[8px] uppercase tracking-[0.2em] mb-0.5">Dress Code</p>
+                  <p className="text-white text-[11px] font-light uppercase tracking-widest">All Black</p>
+                </div>
+                <div>
+                  <p className="text-silver/60 text-[8px] uppercase tracking-[0.2em] mb-0.5">Lugar</p>
+                  <p className="text-white text-[11px] font-light leading-tight tracking-wide">
+                    Torre Legacy
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Download Action */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1 }}
+          className="mt-6 flex flex-col items-center gap-3"
+        >
+          <button 
+            onClick={downloadQR}
+            disabled={downloading}
+            className="flex items-center gap-2 border border-primary text-primary px-6 py-2.5 rounded-full text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase hover:bg-primary/10 transition-all shadow-[0_0_20px_rgba(239,239,201,0.1)] active:scale-95 disabled:opacity-50"
+          >
+            {downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+            Descargar Código
+          </button>
+          <p className="text-silver/50 text-[8px] font-light tracking-widest uppercase text-center max-w-xs">
+            Presente este código en la entrada
+          </p>
+        </motion.div>
       </div>
     </motion.div>
   );
