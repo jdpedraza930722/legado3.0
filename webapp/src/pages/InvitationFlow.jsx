@@ -546,6 +546,7 @@ const FinalTicket = ({ guestUser }) => {
 };
 
 export default function InvitationFlow() {
+  const [isInitializing, setIsInitializing] = useState(true);
   const [step, setStep] = useState(0);
   const [guestUser, setGuestUser] = useState(null);
   const [completedLevels, setCompletedLevels] = useState([]);
@@ -567,10 +568,15 @@ export default function InvitationFlow() {
           setGuestUser(data);
           // If they already answered previously, we can pre-fill their completed levels
           const completed = [];
-          if (data.phase1_answer) completed.push(1);
-          if (data.phase2_answer) completed.push(2);
-          if (data.phase3_answer) completed.push(3);
+          const aiResponses = data.ai_responses || {};
+          if (aiResponses.fase1) completed.push(1);
+          if (aiResponses.fase2) completed.push(2);
+          if (aiResponses.fase3) completed.push(3);
           setCompletedLevels(completed);
+
+          if (completed.length === 3) {
+            setStep(6);
+          }
         } else {
           console.error("Guest not found:", error);
           // Fallback to mock if not found
@@ -580,10 +586,19 @@ export default function InvitationFlow() {
         // Development fallback if accessed without URL parameter
         setGuestUser({ name: "INVITADO VIP", role: "DIRECTIVO", access_code: "0000" });
       }
+      setIsInitializing(false);
     };
     
     fetchGuest();
   }, []);
+
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <AnimatePresence mode="wait">
@@ -609,10 +624,12 @@ export default function InvitationFlow() {
           onAbort={() => setStep(2)}
           onTransmit={async (answer) => {
             if (guestUser?.access_code && guestUser.access_code !== "0000") {
+              const newAiResponses = { ...(guestUser.ai_responses || {}), fase1: answer };
               await supabase
                 .from('guests')
-                .update({ phase1_answer: answer })
+                .update({ ai_responses: newAiResponses })
                 .eq('access_code', guestUser.access_code);
+              setGuestUser({ ...guestUser, ai_responses: newAiResponses });
             }
             if (!completedLevels.includes(1)) {
               setCompletedLevels([...completedLevels, 1]);
@@ -631,10 +648,12 @@ export default function InvitationFlow() {
           onAbort={() => setStep(2)}
           onTransmit={async (answer) => {
             if (guestUser?.access_code && guestUser.access_code !== "0000") {
+              const newAiResponses = { ...(guestUser.ai_responses || {}), fase2: answer };
               await supabase
                 .from('guests')
-                .update({ phase2_answer: answer })
+                .update({ ai_responses: newAiResponses })
                 .eq('access_code', guestUser.access_code);
+              setGuestUser({ ...guestUser, ai_responses: newAiResponses });
             }
             if (!completedLevels.includes(2)) {
               setCompletedLevels([...completedLevels, 2]);
@@ -653,10 +672,12 @@ export default function InvitationFlow() {
           onAbort={() => setStep(2)}
           onTransmit={async (answer) => {
             if (guestUser?.access_code && guestUser.access_code !== "0000") {
+              const newAiResponses = { ...(guestUser.ai_responses || {}), fase3: answer };
               await supabase
                 .from('guests')
-                .update({ phase3_answer: answer })
+                .update({ ai_responses: newAiResponses })
                 .eq('access_code', guestUser.access_code);
+              setGuestUser({ ...guestUser, ai_responses: newAiResponses });
             }
             if (!completedLevels.includes(3)) {
               setCompletedLevels([...completedLevels, 3]);
