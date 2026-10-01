@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Hexagon } from 'lucide-react';
+import { Sparkles, Hexagon, Loader2, Key } from 'lucide-react';
+import { supabase } from '../supabase';
 
 // Splash Screen Component
 const Splash = ({ onNext }) => {
@@ -32,7 +33,7 @@ const Splash = ({ onNext }) => {
       className="relative flex flex-col items-center justify-center min-h-screen bg-dark-bg overflow-hidden"
     >
       {/* Video Background with Vignette */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#2F1B1A_100%)] z-10 pointer-events-none opacity-80" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#0A0A0A_100%)] z-10 pointer-events-none opacity-80" />
       <video
         ref={videoRef}
         autoPlay
@@ -90,7 +91,7 @@ const Splash = ({ onNext }) => {
           </div>
           <div className="w-full h-[1px] bg-white/10 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-gradient-to-r from-primary/50 to-primary shadow-[0_0_15px_rgba(212,175,55,1)] transition-all duration-75 ease-linear"
+              className="h-full bg-gradient-to-r from-primary/50 to-primary shadow-[0_0_15px_rgba(239,239,201,0.5)] transition-all duration-75 ease-linear"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -100,11 +101,40 @@ const Splash = ({ onNext }) => {
   );
 };
 
-// Register Component with Luxury Minimalist Design
+// Register Component as VIP Access Key
 const Register = ({ onNext }) => {
-  const [role, setRole] = useState('');
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  const roles = ["Catedrático", "Directivo", "Estudiante", "Invitado"];
+  const handleAccess = async () => {
+    if (!email) {
+      setError("Ingrese su Llave de Acceso.");
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+
+    // Query Supabase for the guest
+    const { data, error: fetchError } = await supabase
+      .from('guests')
+      .select('*')
+      .eq('email', email.trim().toLowerCase())
+      .single();
+
+    if (fetchError || !data) {
+      setLoading(false);
+      setError("Credenciales no válidas. El acceso fue denegado.");
+    } else {
+      // Show success message and wait a bit before transitioning
+      setSuccess(`Bienvenido, ${data.name}. Validando pase de ${data.role}...`);
+      setTimeout(() => {
+        onNext(data);
+      }, 2000);
+    }
+  };
 
   return (
     <motion.div 
@@ -123,72 +153,70 @@ const Register = ({ onNext }) => {
         initial={{ y: 15, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-md bg-black/40 backdrop-blur-3xl border border-white/5 border-t-white/20 rounded-3xl p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+        className="relative z-10 w-full max-w-sm bg-black/40 backdrop-blur-3xl border border-white/5 border-t-white/20 rounded-3xl p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
       >
-        <div className="text-center mb-10">
-          <h2 className="text-xl text-white font-light tracking-[0.3em] uppercase mb-3">
-            Identidad
+        {/* Subtle Watermark */}
+        <Hexagon className="absolute -bottom-10 -right-10 w-64 h-64 text-white/[0.02] pointer-events-none" />
+
+        <div className="text-center mb-8">
+          <h2 className="text-base text-white font-light tracking-[0.3em] uppercase mb-2 whitespace-nowrap">
+            Portal de Acceso
           </h2>
-          <p className="text-silver/60 text-xs font-light tracking-wide">
-            Por favor, confirme su registro para acceder a la experiencia inmersiva.
+          <p className="text-silver/60 text-[9px] font-light tracking-widest uppercase">
+            Autentifique su credencial
           </p>
         </div>
         
-        <div className="space-y-8">
-          {/* Minimalist Input: Bottom Border Only */}
-          <div className="relative group">
-            <input 
-              type="text" 
-              required
-              className="w-full bg-transparent border-0 border-b border-white/20 px-0 py-2 text-white focus:outline-none focus:border-primary focus:ring-0 transition-all font-light text-lg peer placeholder-transparent" 
-              placeholder="Nombre Completo"
-            />
-            <label className="absolute left-0 -top-4 text-[10px] text-silver/60 tracking-widest uppercase transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-2 peer-focus:-top-4 peer-focus:text-[10px] peer-focus:text-primary pointer-events-none">
-              Nombre Completo
-            </label>
-          </div>
-
-          <div className="relative group">
+        <div className="space-y-6">
+          <div className="relative flex items-center border-b border-white/20 focus-within:border-primary transition-colors duration-300 pb-2">
+            <Key className="w-4 h-4 text-silver/40 mr-3" />
             <input 
               type="email" 
-              required
-              className="w-full bg-transparent border-0 border-b border-white/20 px-0 py-2 text-white focus:outline-none focus:border-primary focus:ring-0 transition-all font-light text-lg peer placeholder-transparent" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading || success}
+              onKeyDown={(e) => e.key === 'Enter' && handleAccess()}
+              className="w-full bg-transparent border-0 px-0 text-white focus:outline-none focus:ring-0 transition-all font-light text-sm placeholder:text-silver/40 placeholder:tracking-widest placeholder:uppercase placeholder:text-[10px] disabled:opacity-50" 
               placeholder="Correo Institucional"
             />
-            <label className="absolute left-0 -top-4 text-[10px] text-silver/60 tracking-widest uppercase transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-2 peer-focus:-top-4 peer-focus:text-[10px] peer-focus:text-primary pointer-events-none">
-              Correo Institucional
-            </label>
           </div>
 
-          {/* Pill-based Selection instead of Select */}
-          <div className="pt-2">
-            <label className="block text-silver/60 text-[10px] uppercase tracking-widest mb-4">
-              Rol en el Evento
-            </label>
-            <div className="flex flex-wrap gap-3">
-              {roles.map((r) => (
-                <button
-                  key={r}
-                  onClick={() => setRole(r)}
-                  className={`px-4 py-2 rounded-full text-xs font-light tracking-wider transition-all duration-200 ${
-                    role === r 
-                      ? 'bg-wine/30 border-wine text-primary border shadow-[0_0_15px_rgba(100,0,23,0.5)]' 
-                      : 'bg-white/5 border-white/10 text-silver/60 border hover:bg-white/10 hover:text-white'
-                  }`}
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
-          </div>
+          <AnimatePresence>
+            {error && (
+              <motion.p 
+                initial={{ opacity: 0, y: -5 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                exit={{ opacity: 0 }} 
+                className="text-wine text-xs text-center font-light tracking-wide"
+              >
+                {error}
+              </motion.p>
+            )}
+            {success && (
+              <motion.p 
+                initial={{ opacity: 0, y: -5 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                exit={{ opacity: 0 }} 
+                className="text-olive text-xs text-center font-light tracking-wide"
+              >
+                {success}
+              </motion.p>
+            )}
+          </AnimatePresence>
           
           <button 
-            onClick={onNext}
-            className="w-full mt-8 pt-10 pb-4 relative group overflow-hidden flex justify-center"
+            onClick={handleAccess}
+            disabled={loading || success}
+            className="relative overflow-hidden w-full mt-8 py-3 rounded-full border border-primary/30 text-primary font-light tracking-[0.3em] text-[10px] uppercase hover:bg-wine/40 hover:border-wine hover:text-white transition-all duration-300 flex justify-center items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_0_rgba(0,0,0,0)] hover:shadow-[0_0_20px_rgba(100,0,23,0.5)]"
           >
-            <div className="absolute inset-0 w-full h-[1px] top-8 bg-gradient-to-r from-transparent via-primary/50 to-transparent group-hover:via-primary transition-all duration-300" />
-            <span className="text-primary font-light tracking-[0.4em] text-xs uppercase group-hover:text-white transition-colors duration-200">
-              Desbloquear Acceso
+            {/* Shimmer Effect */}
+            <motion.div
+              animate={{ x: ["-100%", "300%"] }}
+              transition={{ repeat: Infinity, duration: 2.5, ease: "linear", repeatDelay: 1.5 }}
+              className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 pointer-events-none"
+            />
+            <span className="relative z-10 flex items-center gap-3">
+              {loading && !success ? <Loader2 className="w-4 h-4 animate-spin" /> : "Iniciar Experiencia"}
             </span>
           </button>
         </div>
@@ -199,11 +227,17 @@ const Register = ({ onNext }) => {
 
 export default function InvitationFlow() {
   const [step, setStep] = useState(0);
+  const [guestUser, setGuestUser] = useState(null);
+
+  const handleVerificationSuccess = (user) => {
+    setGuestUser(user);
+    setStep(2);
+  };
 
   return (
     <AnimatePresence mode="wait">
       {step === 0 && <Splash key="splash" onNext={() => setStep(1)} />}
-      {step === 1 && <Register key="register" onNext={() => setStep(2)} />}
+      {step === 1 && <Register key="register" onNext={handleVerificationSuccess} />}
       {step === 2 && (
         <motion.div 
           key="map"
@@ -211,6 +245,11 @@ export default function InvitationFlow() {
           animate={{ opacity: 1 }}
           className="flex flex-col items-center justify-center min-h-screen bg-dark-bg p-10 text-center text-xl text-primary font-light tracking-widest uppercase"
         >
+          <div className="mb-4">
+            <span className="text-silver/60 text-sm block mb-2">Acceso Concedido:</span>
+            {guestUser?.name} <br/> 
+            <span className="text-sm opacity-50">({guestUser?.role})</span>
+          </div>
           Mapa de niveles en construcción...
         </motion.div>
       )}
