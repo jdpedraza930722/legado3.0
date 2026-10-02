@@ -530,7 +530,7 @@ const FinalTicket = ({ guestUser }) => {
                 <div className="bg-white p-3 rounded-xl mb-3 shadow-[0_0_40px_rgba(255,255,255,0.1)] ring-1 ring-white/20">
                   <QRCodeSVG 
                     id="qr-code"
-                    value={guestUser?.access_code || "0000"} 
+                    value={`LEGADO3.0-${guestUser?.access_code || "0000"}`}
                     size={120} 
                     level={"H"}
                     bgColor={"#ffffff"}
