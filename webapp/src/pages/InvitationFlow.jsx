@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { Sparkles, Hexagon, Loader2, Key, AlertCircle, CheckCircle2, Lock, Download } from 'lucide-react';
 import { supabase } from '../supabase';
+import { toPng } from 'html-to-image';
 
 // Splash Screen Component
 const Splash = ({ onNext }) => {
@@ -434,44 +435,24 @@ const getPhaseData = (phaseNumber, role) => {
 const FinalTicket = ({ guestUser }) => {
   const [downloading, setDownloading] = useState(false);
 
-  const downloadQR = () => {
+  const downloadQR = async () => {
     setDownloading(true);
-    const svg = document.getElementById("qr-code");
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-    img.onload = () => {
-      // Add padding around QR
-      const padding = 40;
-      canvas.width = img.width + (padding * 2);
-      canvas.height = img.height + (padding * 2) + 60; // Extra room for text at bottom
-      
-      // Draw background
-      ctx.fillStyle = "#0A0A0A"; 
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw QR border
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(padding - 10, padding - 10, img.width + 20, img.height + 20);
-
-      // Draw QR
-      ctx.drawImage(img, padding, padding);
-      
-      // Draw Text
-      ctx.fillStyle = "#EFEFC9"; // primary color
-      ctx.font = "bold 24px monospace";
-      ctx.textAlign = "center";
-      ctx.fillText(`ID: ${guestUser?.access_code || "0000"}`, canvas.width / 2, canvas.height - 30);
-
-      const pngFile = canvas.toDataURL("image/png");
-      const downloadLink = document.createElement("a");
-      downloadLink.download = `Legado3_Acceso_${guestUser?.access_code || "0000"}.png`;
-      downloadLink.href = `${pngFile}`;
-      downloadLink.click();
-      setDownloading(false);
-    };
-    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+    try {
+      const element = document.getElementById("ticket-capture");
+      if (element) {
+        const dataUrl = await toPng(element, { 
+          backgroundColor: "#0A0A0A",
+          pixelRatio: 3 
+        });
+        const downloadLink = document.createElement("a");
+        downloadLink.download = `Acceso_Legado3_${guestUser?.access_code || "0000"}.png`;
+        downloadLink.href = dataUrl;
+        downloadLink.click();
+      }
+    } catch (error) {
+      console.error("Error downloading ticket:", error);
+    }
+    setDownloading(false);
   };
 
   return (
@@ -485,8 +466,9 @@ const FinalTicket = ({ guestUser }) => {
       
       <div className="max-w-sm w-full relative z-10 flex flex-col h-full justify-center py-4">
         
-        {/* Ticket Header (Name & Role) */}
-        <div className="text-center mb-4">
+        <div id="ticket-capture" className="flex flex-col items-center p-4 bg-dark-bg w-full">
+          {/* Ticket Header (Name & Role) */}
+          <div className="text-center mb-4">
           <h1 className="text-white text-sm font-light tracking-widest uppercase mb-2">
             {guestUser?.name || "Invitado"}
           </h1>
@@ -565,6 +547,7 @@ const FinalTicket = ({ guestUser }) => {
             </div>
           </div>
         </motion.div>
+        </div>
 
         {/* Download Action */}
         <motion.div 
