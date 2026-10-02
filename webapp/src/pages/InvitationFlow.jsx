@@ -154,13 +154,17 @@ const LevelMap = ({ guestUser, onStartPhase1, onStartPhase2, onStartPhase3, onFi
 
       {/* Map Tree */}
       <div className="relative z-10 flex-1 w-full max-w-md mx-auto flex flex-col items-center justify-center pb-12 mt-4">
-        <div className="flex items-center gap-2 sm:gap-4 mb-10 opacity-70">
+        <div className="flex items-center gap-2 sm:gap-4 mb-2 opacity-70">
           <div className="w-8 sm:w-12 h-[1px] bg-gradient-to-r from-transparent to-primary/50" />
           <h2 className="text-center text-[9px] sm:text-[11px] text-silver tracking-[0.3em] sm:tracking-[0.5em] uppercase font-medium whitespace-nowrap">
             Protocolo Legado
           </h2>
           <div className="w-8 sm:w-12 h-[1px] bg-gradient-to-l from-transparent to-primary/50" />
         </div>
+        
+        <p className="text-center text-[7px] sm:text-[8px] text-silver/60 tracking-[0.2em] sm:tracking-[0.4em] uppercase mb-10 font-mono">
+          [ Seleccione la fase activa ]
+        </p>
 
         <div className="relative w-full flex flex-col items-center space-y-12">
           {/* Vertical Connecting Line */}
@@ -176,6 +180,7 @@ const LevelMap = ({ guestUser, onStartPhase1, onStartPhase2, onStartPhase3, onFi
 
           {levels.map((level, index) => {
             const isActive = level.status === 'active' || completedLevels.includes(level.id);
+            const isPlayable = isActive && !completedLevels.includes(level.id);
             return (
               <motion.div 
                 key={level.id}
@@ -192,6 +197,10 @@ const LevelMap = ({ guestUser, onStartPhase1, onStartPhase2, onStartPhase3, onFi
                       : 'border-white/5 opacity-60'
                     }`}
                 >
+                  {/* Glowing Aura for Playable Level */}
+                  {isPlayable && (
+                    <div className="absolute inset-0 rounded-full shadow-[0_0_30px_rgba(239,239,201,0.4)] ring-1 ring-primary/50 animate-pulse pointer-events-none" />
+                  )}
                   {/* Left: Icon Circle */}
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-primary/10' : 'bg-white/5'}`}>
                     {isActive ? (
