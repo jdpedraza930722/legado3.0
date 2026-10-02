@@ -31,7 +31,7 @@ const Splash = ({ onNext }) => {
       animate={{ opacity: 1 }} 
       exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="relative flex flex-col items-center justify-center min-h-screen bg-dark-bg overflow-hidden"
+      className="relative flex flex-col items-center justify-center min-h-dvh bg-dark-bg overflow-hidden pb-8 sm:pb-0"
     >
       {/* Video Background with Vignette */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#0A0A0A_100%)] z-10 pointer-events-none opacity-80" />
@@ -116,7 +116,7 @@ const LevelMap = ({ guestUser, onStartPhase1, onStartPhase2, onStartPhase3, onFi
       initial={{ opacity: 0 }} 
       animate={{ opacity: 1 }} 
       exit={{ opacity: 0, transition: { duration: 0.2 } }}
-      className="flex flex-col min-h-screen bg-dark-bg p-6 relative overflow-hidden"
+      className="flex flex-col min-h-dvh bg-dark-bg p-6 pb-12 relative overflow-hidden"
     >
       {/* Background ambient light */}
       <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-wine/10 rounded-full blur-[100px] pointer-events-none" />
@@ -283,7 +283,7 @@ const PhaseQuestion = ({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, y: -20 }}
-      className="flex flex-col min-h-screen bg-dark-bg p-4 sm:p-6 items-center justify-center relative overflow-hidden"
+      className="flex flex-col min-h-dvh bg-dark-bg p-4 pb-12 sm:p-6 items-center justify-center relative overflow-hidden"
     >
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-wine/5 rounded-full blur-[120px] pointer-events-none" />
       
@@ -479,7 +479,7 @@ const FinalTicket = ({ guestUser }) => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, y: -20 }}
-      className="flex flex-col min-h-screen bg-dark-bg p-4 sm:p-6 items-center justify-center relative overflow-hidden"
+      className="flex flex-col min-h-dvh bg-dark-bg p-4 pb-10 sm:p-6 items-center justify-center relative overflow-hidden"
     >
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-silver/5 rounded-full blur-[120px] pointer-events-none" />
       
@@ -639,7 +639,7 @@ export default function InvitationFlow() {
 
   if (isInitializing) {
     return (
-      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
+      <div className="min-h-dvh bg-dark-bg flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </div>
     );
