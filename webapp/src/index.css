@@ -12,6 +12,9 @@
 }
 
 @layer base {
+  html {
+    background-color: var(--color-dark-bg);
+  }
   body {
     @apply bg-dark-bg text-gray-200 antialiased;
     font-family: 'Inter', sans-serif;

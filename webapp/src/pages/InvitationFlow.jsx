@@ -590,6 +590,29 @@ const FinalTicket = ({ guestUser }) => {
   );
 };
 
+const AccessDenied = () => {
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      className="flex flex-col min-h-dvh bg-dark-bg p-6 items-center justify-center text-center relative overflow-hidden"
+    >
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-red-900/10 rounded-full blur-[100px] pointer-events-none" />
+      
+      <div className="mb-6 p-4 rounded-full bg-red-500/5 border border-red-500/20 relative">
+        <div className="absolute inset-0 rounded-full border border-red-500/20 animate-ping opacity-20" />
+        <Lock className="w-8 h-8 text-red-500/80" />
+      </div>
+      
+      <h2 className="text-red-500/90 text-sm font-light tracking-[0.4em] uppercase mb-4">Acceso Denegado</h2>
+      
+      <p className="text-silver/60 text-xs font-light leading-relaxed max-w-xs mx-auto">
+        No se ha detectado una credencial de acceso válida o la invitación ha expirado. Por favor, utilice el enlace seguro proporcionado por la directiva de Legado 3.0.
+      </p>
+    </motion.div>
+  );
+};
+
 export default function InvitationFlow() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [step, setStep] = useState(0);
@@ -624,12 +647,10 @@ export default function InvitationFlow() {
           }
         } else {
           console.error("Guest not found:", error);
-          // Fallback to mock if not found
-          setGuestUser({ name: "INVITADO VIP", role: "DIRECTIVO", access_code: "0000" });
+          setStep(-1);
         }
       } else {
-        // Development fallback if accessed without URL parameter
-        setGuestUser({ name: "INVITADO VIP", role: "DIRECTIVO", access_code: "0000" });
+        setStep(-1);
       }
       setIsInitializing(false);
     };
@@ -647,6 +668,7 @@ export default function InvitationFlow() {
 
   return (
     <AnimatePresence mode="wait">
+      {step === -1 && <AccessDenied key="denied" />}
       {step === 0 && <Splash key="splash" onNext={() => setStep(2)} />}
       {step === 2 && (
         <LevelMap 
